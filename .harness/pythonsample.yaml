@@ -88,8 +88,8 @@ pipeline:
                     image: fbreton/pythonsample
                     shell: Sh
                     command: |-
-                      ls /
-                      python3 /app.py
+                      ls /python-pipeline-sample
+                      python3 /python-pipeline-sample/app.py
                     portBindings:
                       "5000": "5000"
               - step:
