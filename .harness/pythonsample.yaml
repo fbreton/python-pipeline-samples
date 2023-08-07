@@ -80,6 +80,17 @@ pipeline:
           execution:
             steps:
               - step:
+                  type: Run
+                  name: Run_2
+                  identifier: Run_2
+                  spec:
+                    connectorRef: FredDocker
+                    image: fbreton/pythonsample
+                    shell: Sh
+                    command: |-
+                      ls /python-pipeline-sample
+                      python3 /python-pipeline-sample/app.pyc
+              - step:
                   type: Background
                   name: Python server
                   identifier: Python_server
@@ -87,9 +98,7 @@ pipeline:
                     connectorRef: FredDocker
                     image: fbreton/pythonsample
                     shell: Sh
-                    command: |-
-                      ls /python-pipeline-sample
-                      python3 /python-pipeline-sample/app.py
+                    command: python3 /python-pipeline-sample/app.pyc
                     portBindings:
                       "5000": "5000"
               - step:
