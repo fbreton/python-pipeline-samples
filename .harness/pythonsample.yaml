@@ -88,6 +88,8 @@ pipeline:
                     image: fbreton/pythonsample
                     shell: Sh
                     command: python3 ./app.py
+                    portBindings:
+                      "5000": "5000"
               - step:
                   type: Run
                   name: Test connection to server
