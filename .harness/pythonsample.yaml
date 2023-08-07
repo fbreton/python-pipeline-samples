@@ -112,3 +112,4 @@ pipeline:
                     command: |-
                       sleep 10
                       curl Python_server:5000
+  allowStageExecutions: true
