@@ -1,0 +1,101 @@
+pipeline:
+  name: python-sample
+  identifier: pythonsample
+  projectIdentifier: Fred_SandBox
+  orgIdentifier: SE_Sandbox
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: FredGithub
+        repoName: python-pipeline-samples
+        build: <+input>
+  stages:
+    - stage:
+        name: Build
+        identifier: Build
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: false
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Compile
+                  identifier: Compile
+                  spec:
+                    connectorRef: FredDocker
+                    image: python:3.10.6-alpine
+                    shell: Sh
+                    command: python -m compileall ./
+              - step:
+                  type: Run
+                  name: Create docker file
+                  identifier: Create_docker_file
+                  spec:
+                    connectorRef: FredDocker
+                    image: alpine
+                    shell: Sh
+                    command: |-
+                      touch pythondockerfile
+                      cat > pythondockerfile <<- EOM
+                      FROM python:3.10.6-alpine
+                      WORKDIR /python-pipeline-sample
+                      ADD . /python-pipeline-sample
+                      RUN pip install -r requirements.txt
+                      CMD ["python3" , "./app.py"]
+                      EOM
+                      cat pythondockerfile
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and Push image
+                  identifier: Build_and_Push_image
+                  spec:
+                    connectorRef: FredDocker
+                    repo: fbreton/pythonsample
+                    tags:
+                      - latest
+                    dockerfile: pythondockerfile
+    - stage:
+        name: Integration test
+        identifier: Integration_test
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: false
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          execution:
+            steps:
+              - step:
+                  type: Background
+                  name: Python server
+                  identifier: Python_server
+                  spec:
+                    connectorRef: FredDocker
+                    image: fbreton/pythonsample
+                    shell: Sh
+                    command: python3 ./app.py
+              - step:
+                  type: Run
+                  name: Test connection to server
+                  identifier: Test_connection_to_server
+                  spec:
+                    connectorRef: FredDocker
+                    image: curlimages/curl:7.73.0
+                    shell: Sh
+                    command: |-
+                      sleep 10
+                      curl localhost:5000
